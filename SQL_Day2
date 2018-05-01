@@ -1,0 +1,128 @@
+What languages are spoken in the United States? (12)
+SELECT
+  c.name AS country,
+  cl.language AS language
+FROM
+  country c JOIN
+  countrylanguage cl ON (c.code = cl.countrycode)
+WHERE c.code = 'USA'
+ORDER BY
+  country,
+  language Brazil? (not Spanish...)
+SELECT
+  c.name AS country,
+  cl.language AS language
+FROM
+  country c JOIN
+  countrylanguage cl ON (c.code = cl.countrycode)
+WHERE c.name = 'Brazil'
+ORDER BY
+  country,
+  language Switzerland? (6)
+What are the cities of the US? (274)
+SELECT
+c.name AS country,
+cy.name AS city
+FROM
+country c JOIN
+city cy ON (c.code = cy.countrycode)
+WHERE c.name = 'United States'
+ORDER BY
+country,
+
+city India? (341)
+SELECT
+  c.name AS country,
+  cy.name AS city
+FROM
+  country c JOIN
+  city cy ON (c.code = cy.countrycode)
+WHERE c.name = 'India'
+ORDER BY
+  country,
+  city
+
+Languages
+
+What are the official languages of Switzerland? (4 languages)
+SELECT
+c.name AS country,
+cl.language AS language,
+cl.isofficial AS official_language
+FROM
+country c JOIN
+countrylanguage cl ON (c.code = cl.countrycode)
+WHERE c.name = 'Switzerland' AND cl.isofficial = true
+
+Which country or countries speak the most languages? (12 languages)
+SELECT
+    c.name AS country,
+    count(cl.language)
+FROM
+    country c JOIN
+    countrylanguage cl ON (c.code = cl.countrycode)
+GROUP BY
+	c.name
+ORDER BY
+	count DESC
+
+Which country or countries have the most official languages? (4 languages)
+SELECT
+    c.name AS country,
+    count(cl.isofficial)
+FROM
+    country c JOIN
+    countrylanguage cl ON (c.code = cl.countrycode)
+WHERE
+	cl.isofficial = true
+GROUP BY
+	c.name
+ORDER BY
+	count DESC
+
+Which languages are spoken in the ten largest (area) countries?
+Hint: Use WITH to get the countries and join with that table
+WITH ten_largest AS
+	(SELECT
+    	name,
+    	surfacearea,
+   	   code
+     FROM
+      	country
+     WHERE
+   		  population > 0
+     ORDER BY
+    	surfacearea DESC
+     LIMIT
+     10
+    )
+
+SELECT
+    c.name AS country,
+    cl.language AS languages,
+    c.code,
+    c.surfacearea
+FROM
+    ten_largest c  JOIN
+  	countrylanguage cl ON (c.code = cl.countrycode)
+ORDER BY
+	c.surfacearea DESC
+
+What languages are spoken in the 20 poorest (GNP/ capita) countries in the world? (94 with GNP > 0)
+Hint: Use WITH to get the countries, and SELECT DISTINCT to remove duplicates
+Are there any countries without an official language?
+Hint: Use NOT IN with a SELECT
+What are the languages spoken in the countries with no official language? (49 countries, 172 languages, incl. English)
+Which countries have the highest proportion of official language speakers? The lowest?
+What is the most spoken language in the world?
+Cities
+
+What is the population of the United States? What is the city population of the United States?
+What is the population of the India? What is the city population of the India?
+Which countries have no cities? (7 not really contries...)
+Languages and Cities
+
+What is the total population of cities where English is the official language? Spanish?
+Hint: The official language of a city is based on country.
+Which countries have the 100 biggest cities in the world?
+What languages are spoken in the countries with the 100 biggest cities in the world?
