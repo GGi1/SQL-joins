@@ -8,7 +8,9 @@ FROM
 WHERE c.code = 'USA'
 ORDER BY
   country,
-  language Brazil? (not Spanish...)
+  language
+
+Brazil? (not Spanish...)
 SELECT
   c.name AS country,
   cl.language AS language
@@ -16,19 +18,19 @@ FROM
   country c JOIN
   countrylanguage cl ON (c.code = cl.countrycode)
 WHERE c.name = 'Brazil'
-ORDER BY
-  country,
-  language Switzerland? (6)
+
+language Switzerland? (6)
+
 What are the cities of the US? (274)
 SELECT
 c.name AS country,
 cy.name AS city
 FROM
-country c JOIN
-city cy ON (c.code = cy.countrycode)
+  country c JOIN
+  city cy ON (c.code = cy.countrycode)
 WHERE c.name = 'United States'
 ORDER BY
-country,
+  country,
 
 city India? (341)
 SELECT
@@ -110,19 +112,151 @@ ORDER BY
 
 What languages are spoken in the 20 poorest (GNP/ capita) countries in the world? (94 with GNP > 0)
 Hint: Use WITH to get the countries, and SELECT DISTINCT to remove duplicates
+WITH twenty_poorest AS
+    (SELECT
+        name,
+        code,
+        (gnp/population) AS per_capita
+    FROM
+        country
+    WHERE
+        population > 0
+   AND
+        gnp > 0
+    ORDER BY
+    per_capita
+    LIMIT
+    20
+    )
+SELECT
+    c.name AS country,
+    cl.language AS languages,
+    c.code,
+    c.per_capita
+FROM
+    twenty_poorest c  JOIN
+  	countrylanguage cl ON (c.code = cl.countrycode)
+ORDER BY
+	c.per_capita
+
 Are there any countries without an official language?
 Hint: Use NOT IN with a SELECT
+
+SELECT *
+FROM country c
+WHERE c.code NOT IN (
+    SELECT DISTINCT (countrycode)
+	FROM countrylanguage
+	WHERE isofficial = true
+);
+
+
 What are the languages spoken in the countries with no official language? (49 countries, 172 languages, incl. English)
+SELECT c.name, cl.language
+FROM country c
+JOIN countrylanguage cl ON (c.code = cl.countrycode)
+WHERE c.code NOT IN (
+    SELECT DISTINCT (countrycode)
+	FROM countrylanguage
+	WHERE isofficial = true
+)
+ORDER BY
+c.code
+
+// or for just the list of lanuages:
+SELECT DISTINCT (cl.language)
+FROM country c
+JOIN countrylanguage cl ON (c.code = cl.countrycode)
+WHERE c.code NOT IN (
+    SELECT DISTINCT (countrycode)
+	FROM countrylanguage
+	WHERE isofficial = true
+)
+ORDER BY
+cl.language
+
 Which countries have the highest proportion of official language speakers? The lowest?
+SELECT c.name, cl.language, cl.percentage
+FROM countrylanguage cl
+JOIN country c ON (c.code = cl.countrycode)
+WHERE isofficial = true
+ORDER BY
+percentage DESC
+
 What is the most spoken language in the world?
+SELECT
+	cl.language,
+    COUNT(cl.language) AS pop_lang
+FROM country c
+JOIN countrylanguage cl ON (c.code = cl.countrycode)
+GROUP BY cl.language
+ORDER BY pop_lang DESC LIMIT 1
+
 Cities
 
 What is the population of the United States? What is the city population of the United States?
-What is the population of the India? What is the city population of the India?
-Which countries have no cities? (7 not really contries...)
-Languages and Cities
+SELECT
+	name,
+    population
+FROM country
+WHERE name = 'United States'
 
-What is the total population of cities where English is the official language? Spanish?
-Hint: The official language of a city is based on country.
+SELECT
+    SUM(population)
+FROM  city
+WHERE countrycode = 'USA'
+
+
+
+Which countries have no cities? (7 not really countries...)
+SELECT c.name
+FROM country c
+WHERE c.code NOT IN(SELECT DISTINCT cy.countrycode FROM city cy)
+
+Languages and Cities
+What is the total population of cities where English.
+SELECT
+SUM(cy.population)
+FROM city cy
+JOIN countrylanguage cl USING (countrycode)
+WHERE cl.language = 'English'
+
 Which countries have the 100 biggest cities in the world?
+SELECT
+countrycode,
+name,
+population
+FROM city
+ORDER BY population DESC LIMIT 100
 What languages are spoken in the countries with the 100 biggest cities in the world?
+
+SELECT
+cy.countrycode,
+cy.name,
+cy.population,
+cl.language
+FROM city cy
+JOIN countrylanguage cl USING(countrycode)
+ORDER BY population DESC LIMIT 100
+
+
+Which customer placed the rentals on the earliest date?
+
+SELECT c.first_name, c.last_name, r.rental_date, r.customer_id, r.inventory_id
+FROM rentals r
+JOIN customers c USING(customer_id)
+ORDER BY r.rental_date
+LIMIT 1
+
+What did they rent?
+WITH first_rental AS(
+    SELECT r.rental_date, r.customer_id, r.inventory_id , i.film_id
+FROM rentals r
+JOIN inventory i USING(inventory_id)
+ORDER BY r.rental_date
+LIMIT 1
+    )
+
+SELECT f.title, f.film_id, f.description, f.rating, f.release_year
+FROM films f
+JOIN first_rental fr USING(film_id)
